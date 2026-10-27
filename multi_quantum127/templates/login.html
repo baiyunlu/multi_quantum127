@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - QuBridge 平台</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --quantum-primary: #3a5afd;
+      --quantum-secondary: #6c5ce7;
+      --quantum-accent: #00a8ff;
+      --quantum-bg: #f5f6fa;
+      --quantum-text: #2d3436;
+      --quantum-text-light: #636e72;
+    }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(0,168,255,0.15), transparent 60%),
+                  radial-gradient(900px 600px at 80% 20%, rgba(108,92,231,0.16), transparent 60%),
+                  var(--quantum-bg);
+      color: var(--quantum-text);
+      padding: 20px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0,168,255,0.15);
+      border-radius: 16px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.10);
+      overflow: hidden;
+    }
+    .login-head {
+      padding: 18px 20px;
+      background: linear-gradient(135deg, var(--quantum-secondary), var(--quantum-accent));
+      color: white;
+    }
+    .brand {
+      display:flex; align-items:center; gap:10px;
+      font-weight: 800;
+      letter-spacing: .5px;
+    }
+    .brand i { font-size: 1.3rem; }
+    .login-body { padding: 18px 20px 20px; }
+    .btn-quantum {
+      background: linear-gradient(135deg, var(--quantum-secondary), var(--quantum-accent));
+      border: none; border-radius: 999px;
+      font-weight: 700;
+      padding: 10px 14px;
+    }
+    .btn-quantum:hover { filter: brightness(0.98); }
+    .form-control {
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .hint { color: var(--quantum-text-light); font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-head">
+      <div class="brand">
+        <i class="fas fa-atom"></i>
+        <div>
+          <div>QuBridge 多量子线路仿真平台</div>
+          <div class="small opacity-75">登录后进入系统</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }} py-2" role="alert" style="border-radius:12px;">
+              <i class="fas fa-circle-info me-2"></i>{{ msg }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">用户名</label>
+          <input class="form-control" type="text" name="username" placeholder="请输入用户名" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">密码</label>
+          <input class="form-control" type="password" name="password" placeholder="请输入密码" required>
+        </div>
+        <button type="submit" class="btn btn-quantum w-100 text-white">
+          <i class="fas fa-right-to-bracket me-2"></i>登录
+        </button>
+      </form>
+
+      <div class="mt-3 hint text-center">
+        建议使用 Chrome / Edge 打开；移动端可从左上角按钮展开菜单。
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

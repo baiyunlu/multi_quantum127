@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量子线路并行分区可视化系统 · 二级侧栏菜单</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 原有样式完全保留，仅添加说明按钮相关的微调 */
+        :root {
+            --quantum-primary: #3a5afd;
+            --quantum-secondary: #6c5ce7;
+            --quantum-accent: #00a8ff;
+            --quantum-light: #ffffff;
+            --quantum-dark: #2d3436;
+            --quantum-highlight: #e84118;
+            --quantum-bg: #f5f6fa;
+            --quantum-card-bg: rgba(255, 255, 255, 0.95);
+            --quantum-text: #2d3436;
+            --quantum-text-light: #636e72;
+            --quantum-border: rgba(0, 0, 0, 0.08);
+            --quantum-shadow: rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--quantum-bg);
+            color: var(--quantum-text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== 左侧导航栏 (已经包含二级悬浮菜单结构) ===== */
+        .sidebar-nav {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 250px;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(0, 168, 255, 0.2);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(0, 168, 255, 0.1);
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: var(--quantum-accent);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-item {
+            position: relative;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--quantum-text);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .sidebar-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(0, 168, 255, 0.08);
+            color: var(--quantum-accent);
+            border-left-color: var(--quantum-accent);
+        }
+
+        /* 有子菜单的项右侧箭头 */
+        .sidebar-item-has-children > .sidebar-link::after {
+            content: '\f054';  /* fa-chevron-right */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--quantum-text-light);
+            transition: transform 0.2s;
+        }
+
+        .sidebar-item-has-children:hover > .sidebar-link::after {
+            transform: rotate(90deg);
+            color: var(--quantum-accent);
+        }
+
+        /* 二级悬浮菜单 (核心: 右侧弹出) */
+        .hover-submenu {
+            position: absolute;
+            left: 100%;
+            top: 0;
+            width: 200px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: 1px solid rgba(0,168,255,0.2);
+            padding: 10px 0;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s, visibility 0.2s;
+            z-index: 1050;
+            backdrop-filter: blur(8px);
+            background: rgba(255,255,255,0.98);
+        }
+
+        .sidebar-item-has-children:hover .hover-submenu {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .submenu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--quantum-text);
+            text-decoration: none;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .submenu-item i {
+            width: 20px;
+            margin-right: 12px;
+            color: var(--quantum-accent);
+        }
+
+        .submenu-item:hover {
+            background: rgba(0,168,255,0.08);
+            border-left-color: var(--quantum-accent);
+            color: var(--quantum-accent);
+        }
+
+        .submenu-item.active {
+            background: rgba(0,168,255,0.12);
+            border-left-color: var(--quantum-accent);
+            font-weight: 600;
+        }
+
+        /* 移动端调整 */
+        @media (max-width: 768px) {
+            .hover-submenu {
+                position: static;
+                left: 0;
+                width: 100%;
+                box-shadow: none;
+                border: none;
+                background: rgba(0,168,255,0.03);
+                padding-left: 30px;
+                visibility: visible;
+                opacity: 1;
+                display: none;
+            }
+            .sidebar-item-has-children:hover .hover-submenu {
+                display: block;
+            }
+            .sidebar-item-has-children > .sidebar-link::after {
+                display: none;
+            }
+        }
+
+        /* 当前算法指示器 (悬浮小标签) */
+        .current-algo-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--quantum-accent);
+            border-radius: 40px;
+            padding: 10px 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1100;
+            font-size: 0.9rem;
+        }
+        .current-algo-indicator .badge {
+            background: var(--quantum-accent);
+            color: white;
+            font-weight: 500;
+            border-radius: 30px;
+            padding: 4px 10px;
+        }
+
+        /* 算法切换通知 */
+        .algo-notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border-left: 4px solid var(--quantum-accent);
+            border-radius: 8px;
+            padding: 12px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 1200;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--quantum-accent);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 1.2rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-nav {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar-nav.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-menu-toggle {
+                display: flex;
+            }
+        }
+
+        /* 预览卡片样式 */
+        .quantum-card {
+            background: var(--quantum-card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 168, 255, 0.15);
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+            color: var(--quantum-text);
+            margin-bottom: 25px;
+        }
+
+        .quantum-btn {
+            background: linear-gradient(135deg, var(--quantum-secondary), var(--quantum-accent));
+            border: none;
+            border-radius: 30px;
+            padding: 12px 28px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .quantum-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 168, 255, 0.3);
+            color: white;
+        }
+
+        .quantum-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 新增算法说明按钮样式 (与quantum-btn略有区分) */
+        .info-btn {
+            background: white;
+            border: 2px solid var(--quantum-accent);
+            color: var(--quantum-accent);
+            border-radius: 30px;
+            padding: 10px 24px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .info-btn:hover {
+            background: var(--quantum-accent);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,168,255,0.3);
+        }
+
+        .content-header {
+            margin: 20px 24px 18px;
+            padding: 16px 18px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 168, 255, 0.12);
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-info {
+            background: rgba(255,255,255,0.9);
+            border-top: 1px solid rgba(0,168,255,0.2);
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+
+        /* 进度条样式 */
+        .progress {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+
+        /* 结果卡片样式 */
+        .result-card {
+            border: 1px solid rgba(0,168,255,0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            background: white;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(0,168,255,0.2);
+        }
+
+        /* 算法选择样式 */
+        .algorithm-selector {
+            background: rgba(0,168,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--quantum-accent);
+            border-color: var(--quantum-accent);
+        }
+
+        .form-check-label {
+            cursor: pointer;
+        }
+
+        .form-check-input:disabled + .form-check-label {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 重置按钮样式 */
+        .reset-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 270px;
+            background: white;
+            border: 1px solid #ff6b6b;
+            border-radius: 40px;
+            padding: 8px 16px;
+            color: #ff6b6b;
+            cursor: pointer;
+            z-index: 1100;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .reset-btn:hover {
+            background: #ff6b6b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255,107,107,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .reset-btn {
+                left: 20px;
+                bottom: 80px;
+            }
+        }
+
+        /* 对比表格样式 */
+        .comparison-table {
+            font-size: 0.9rem;
+        }
+
+        .comparison-table th {
+            background-color: var(--quantum-accent);
+            color: white;
+            font-weight: 500;
+        }
+
+        .comparison-table .positive-diff {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .comparison-table .negative-diff {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* 统计卡片样式增强 */
+        .stats-card {
+            border-radius: 10px;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stats-card.standard {
+            background: linear-gradient(135deg, #3a5afd, #2c3e9c);
+        }
+
+        .stats-card.adaptive {
+            background: linear-gradient(135deg, #00a8ff, #0077b3);
+        }
+
+        .stats-card.improvement {
+            background: linear-gradient(135deg, #00b894, #008b6b);
+        }
+
+        .stats-card h3 {
+            margin: 10px 0;
+            font-size: 2rem;
+        }
+
+        .stats-card small {
+            opacity: 0.9;
+        }
+
+        /* 加载动画 */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,168,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--quantum-accent);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 算法说明模态框 (轻量) */
+        .algo-desc-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--quantum-accent);
+            z-index: 9999;
+            max-width: 450px;
+            width: 90%;
+            display: none;
+            backdrop-filter: blur(16px);
+        }
+        .algo-desc-modal.show {
+            display: block;
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(0,168,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-body {
+            padding: 24px;
+        }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid rgba(0,168,255,0.1);
+            text-align: right;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--quantum-text-light);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 左侧导航栏 (带二级悬浮菜单) -->
+<div class="sidebar-nav" id="sidebarNav">
+    <div class="sidebar-brand">
+        <i class="fas fa-atom"></i>
+        <span>QuBridge 导航</span>
+    </div>
+    <ul class="sidebar-menu">
+        <!-- 普通菜单项 -->
+        <li><a href="{{ url_for('home') }}" class="sidebar-link"><i class="fas fa-home"></i>首页</a></li>
+        <li><a href="{{ url_for('framework') }}" class="sidebar-link"><i class="fas fa-sitemap"></i>QuBridge框架</a></li>
+        <li><a href="{{ url_for('demos') }}" class="sidebar-link"><i class="fas fa-play-circle"></i>算法演示</a></li>
+        <li><a href="{{ url_for('results') }}" class="sidebar-link"><i class="fas fa-chart-bar"></i>实验结果</a></li>
+
+        <!-- 量子模拟器 (带有二级悬浮菜单) -->
+        <li class="sidebar-item sidebar-item-has-children" id="simulatorMenuItem">
+            <a href="#" class="sidebar-link active" id="simulatorLink">
+                <i class="fas fa-microchip"></i>量子模拟器
+            </a>
+            <!-- 二级菜单: 三个选项 -->
+            <div class="hover-submenu" id="algorithmSubmenu">
+                <a href="#" class="submenu-item" data-algo="standard">
+                    <i class="fas fa-microchip"></i>标准算法
+                </a>
+                <a href="#" class="submenu-item" data-algo="adaptive">
+                    <i class="fas fa-brain"></i>自适应算法
+                </a>
+                <a href="#" class="submenu-item" data-algo="compare">
+                    <i class="fas fa-chart-line"></i>算法对比
+                </a>
+            </div>
+        </li>
+
+        <!-- 其他菜单项 -->
+        <li><a href="{{ url_for('qubit_routing') }}" class="sidebar-link"><i class="fas fa-route"></i>量子比特路由</a></li>
+        <li><a href="{{ url_for('circuit_partition') }}" class="sidebar-link"><i class="fas fa-project-diagram"></i>线路分区映射</a></li>
+        <li><a href="{{ url_for('News') }}" class="sidebar-link"><i class="fas fa-newspaper"></i>最新动态</a></li>
+        <li><a href="{{ url_for('about') }}" class="sidebar-link"><i class="fas fa-info-circle"></i>关于项目</a></li>
+    </ul>
+
+    <div class="sidebar-footer" style="padding: 20px; border-top: 1px solid rgba(0,168,255,0.1); margin-top: 20px;">
+        <div class="sidebar-user" style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+            <i class="fas fa-user-circle" style="color: var(--quantum-accent);"></i>
+            <span>admin</span>
+        </div>
+        <a class="btn quantum-btn w-100" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a>
+    </div>
+</div>
+
+<!-- 移动端菜单切换按钮 -->
+<button class="btn quantum-btn mobile-menu-toggle" id="mobileMenuToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- 重置按钮 -->
+<button class="reset-btn" id="resetBtn" title="重置状态，清理旧文件，允许重新上传">
+    <i class="fas fa-undo-alt me-1"></i>重置并清理
+</button>
+
+<!-- 主内容区域 -->
+<div class="main-content">
+    <div class="content-header">
+        <div>
+            <div class="content-title" style="font-size:1.3rem; font-weight:700;">量子模拟器</div>
+            <div class="content-subtitle" style="color:var(--quantum-text-light);">交互式量子线路设计与仿真 · 当前算法: <span id="headerAlgoName">标准分区算法</span></div>
+        </div>
+        <div class="content-actions d-flex gap-2">
+            <a class="btn btn-outline-primary btn-sm" href="/"><i class="fas fa-home me-1"></i>首页</a>
+            <a class="btn quantum-btn btn-sm" href="/logout"><i class="fas fa-sign-out-alt me-1"></i>退出</a>
+        </div>
+    </div>
+
+    <!-- 量子模拟器主界面 -->
+    <div class="container py-4">
+        <div class="quantum-card p-4">
+            <h4><i class="fas fa-upload me-2" style="color:var(--quantum-accent);"></i>上传QASM线路文件</h4>
+            <p class="text-muted">选择文件后系统将使用当前算法进行分析</p>
+
+            <!-- 算法选择器 (包含对比模式) -->
+            <div class="algorithm-selector">
+                <label class="form-label fw-bold mb-3"><i class="fas fa-microchip me-1"></i>选择算法：</label>
+                <div class="d-flex flex-wrap gap-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="algorithmRadio" id="standardAlgo" value="standard" checked>
+                        <label class="form-check-label" for="standardAlgo">
+                            <i class="fas fa-microchip me-1" style="color:var(--quantum-accent);"></i>
+                            标准分区算法
+                            <small class="text-muted d-block">基于线路依赖和拓扑结构进行分区</small>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="algorithmRadio" id="adaptiveAlgo" value="adaptive">
+                        <label class="form-check-label" for="adaptiveAlgo">
+                            <i class="fas fa-brain me-1" style="color:var(--quantum-accent);"></i>
+                            自适应分区算法
+                            <small class="text-muted d-block">动态调整分区策略，优化深度和保真度</small>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="algorithmRadio" id="compareAlgo" value="compare">
+                        <label class="form-check-label" for="compareAlgo">
+                            <i class="fas fa-chart-line me-1" style="color:var(--quantum-accent);"></i>
+                            算法对比模式
+                            <small class="text-muted d-block">同时运行两种算法，输出详细对比结果</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="qasmFileInput" class="form-label"><i class="fas fa-file-code me-1"></i>选择QASM文件：</label>
+                <input class="form-control" type="file" id="qasmFileInput" accept=".qasm" multiple>
+                <div class="form-text">支持多文件选择，将并行处理所有上传的线路文件</div>
+            </div>
+
+            <!-- 按钮行：原有分析按钮 + 新增算法说明按钮 -->
+            <div class="d-flex gap-3 align-items-center flex-wrap">
+                <button class="btn quantum-btn" id="analyzeBtn" disabled>
+                    <i class="fas fa-rocket me-2"></i>开始分析
+                </button>
+                <button class="btn info-btn" id="algoInfoBtn">
+                    <i class="fas fa-info-circle me-2"></i>算法说明
+                </button>
+            </div>
+
+            <!-- 进度条显示区域 -->
+            <div id="progressContainer" style="display: none; margin-top: 30px;">
+                <h6 class="mb-3"><i class="fas fa-spinner fa-spin me-2"></i>处理进度</h6>
+                <div class="progress" style="height: 25px;">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                         style="width: 0%; background: linear-gradient(135deg, var(--quantum-secondary), var(--quantum-accent));"></div>
+                </div>
+                <p id="progressMessage" class="mt-3 text-center fw-bold"></p>
+                <p id="progressStep" class="text-center text-muted small"></p>
+            </div>
+
+            <!-- 结果展示区域 -->
+            <div id="resultContainer" style="display: none; margin-top: 30px;">
+                <div class="alert alert-success" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span id="resultMessage"></span>
+                </div>
+
+                <!-- 结果统计 (动态生成) -->
+                <div class="row mb-4" id="resultStats"></div>
+
+                <!-- GIF和对比表格展示区 -->
+                <div id="gifContainer" class="row g-3"></div>
+            </div>
+
+            <!-- 错误提示区域 -->
+            <div id="errorContainer" style="display: none; margin-top: 30px;">
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span id="errorMessage"></span>
+                </div>
+                <div class="text-center">
+                    <button class="btn btn-outline-danger" id="retryBtn">
+                        <i class="fas fa-redo me-2"></i>重试
+                    </button>
+                    <button class="btn btn-outline-secondary ms-2" id="clearAndRetryBtn">
+                        <i class="fas fa-broom me-2"></i>清理并重试
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="quantum-card p-4 mt-4">
+            <h5><i class="fas fa-info-circle me-2"></i>当前算法说明</h5>
+            <p id="algoDescription">标准分区算法：基于线路依赖和拓扑结构将量子比特划分为多个子分区，降低SWAP开销。</p>
+
+            <!-- 算法特性对比 -->
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-primary"><i class="fas fa-microchip me-2"></i>标准算法</h6>
+                        <ul class="small">
+                            <li>基于最小生成树的分区策略</li>
+                            <li>贪心资源分配</li>
+                            <li>较快的处理速度</li>
+                            <li>适合中小规模线路</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-success"><i class="fas fa-brain me-2"></i>自适应算法</h6>
+                        <ul class="small">
+                            <li>动态分区质量评估</li>
+                            <li>模拟退火全局优化</li>
+                            <li>更高的保真度</li>
+                            <li>适合大规模复杂线路</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3 h-100" style="border-color: #ffc107 !important;">
+                        <h6 class="text-warning"><i class="fas fa-chart-line me-2"></i>对比模式</h6>
+                        <ul class="small">
+                            <li>同时运行两种算法</li>
+                            <li>PST值详细对比</li>
+                            <li>性能提升百分比</li>
+                            <li>生成对比图表</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部简单页脚 -->
+    <div class="footer-info text-center">
+        <p class="mb-0">量子线路并行分区可视化系统 · 支持标准/自适应算法切换及对比</p>
+        <small class="text-muted">点击「量子模拟器」右侧弹出的菜单选择算法</small>
+    </div>
+</div>
+
+<!-- 当前算法指示器 (右下角) -->
+<div class="current-algo-indicator" id="currentAlgoIndicator">
+    <i class="fas fa-microchip" id="indicatorIcon"></i>
+    <span class="algo-name" id="indicatorAlgoName">标准分区算法</span>
+    <span class="badge">当前算法</span>
+</div>
+
+<!-- 新增算法说明模态框 (轻量) -->
+<div class="algo-desc-modal" id="algoDescModal">
+    <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-info-circle me-2" style="color:var(--quantum-accent);"></i>算法说明</h5>
+        <button class="modal-close" id="closeModalBtn">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBodyContent">
+        <!-- 动态填充内容 -->
+        <p><strong>标准分区算法</strong>：基于线路依赖图和设备拓扑结构，采用最小生成树进行粗粒度分区，贪心分配资源，快速降低SWAP开销，适合中小规模线路。</p>
+        <p><strong>自适应算法</strong>：引入动态评估机制，根据线路特征实时调整分区边界，结合模拟退火全局搜索，有效提升PST保真度，尤其适合深线路。</p>
+        <p><strong>对比模式</strong>：同时执行标准与自适应算法，生成并排对比图表和PST差异表，帮助研究人员直观评估算法优劣。</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn quantum-btn btn-sm" id="closeModalFooterBtn">知道了</button>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    (function() {
+        // 算法映射表
+        const algoMap = {
+            'standard': {
+                name: '标准分区算法',
+                icon: 'fa-microchip',
+                desc: '标准分区算法：基于线路依赖和拓扑结构将量子比特划分为多个子分区，降低SWAP开销。',
+                color: 'primary'
+            },
+            'adaptive': {
+                name: '自适应分区算法',
+                icon: 'fa-brain',
+                desc: '自适应分区算法：根据线路动态调整分区策略，优化深度和保真度。',
+                color: 'success'
+            },
+            'compare': {
+                name: '算法对比模式',
+                icon: 'fa-chart-line',
+                desc: '算法对比模式：同时运行标准算法和自适应算法，输出详细的PST对比结果和性能分析图表。',
+                color: 'warning'
+            }
+        };
+
+        // 状态变量
+        let currentAlgo = localStorage.getItem('selectedAlgorithm') || 'standard';
+        let isProcessing = false;
+        let pollingInterval = null;
+        let currentFiles = [];
+
+        // 获取DOM元素
+        const fileInput = document.getElementById('qasmFileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const clearAndRetryBtn = document.getElementById('clearAndRetryBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressMessage = document.getElementById('progressMessage');
+        const progressStep = document.getElementById('progressStep');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultMessage = document.getElementById('resultMessage');
+        const resultStats = document.getElementById('resultStats');
+        const gifContainer = document.getElementById('gifContainer');
+        const errorContainer = document.getElementById('errorContainer');
+        const errorMessage = document.getElementById('errorMessage');
+        // 算法说明相关元素
+        const algoInfoBtn = document.getElementById('algoInfoBtn');
+        const algoDescModal = document.getElementById('algoDescModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const closeModalFooterBtn = document.getElementById('closeModalFooterBtn');
+        const modalBodyContent = document.getElementById('modalBodyContent');
+
+        // 更新UI函数
+        function setActiveAlgorithm(algoKey) {
+            // 更新本地存储
+            localStorage.setItem('selectedAlgorithm', algoKey);
+            currentAlgo = algoKey;
+
+            // 移除所有submenu-item的active类
+            document.querySelectorAll('.submenu-item').forEach(item => item.classList.remove('active'));
+
+            // 为当前项添加active类
+            const activeItem = document.querySelector(`.submenu-item[data-algo="${algoKey}"]`);
+            if (activeItem) activeItem.classList.add('active');
+
+            // 更新指示器
+            const icon = document.getElementById('indicatorIcon');
+            const algoNameSpan = document.getElementById('indicatorAlgoName');
+            const headerAlgoName = document.getElementById('headerAlgoName');
+            const algoDesc = document.getElementById('algoDescription');
+
+            if (icon) icon.className = `fas ${algoMap[algoKey].icon}`;
+            if (algoNameSpan) algoNameSpan.innerText = algoMap[algoKey].name;
+            if (headerAlgoName) headerAlgoName.innerText = algoMap[algoKey].name;
+            if (algoDesc) algoDesc.innerText = algoMap[algoKey].desc;
+
+            // 同步更新radio按钮
+            const radioBtn = document.querySelector(`input[name="algorithmRadio"][value="${algoKey}"]`);
+            if (radioBtn) radioBtn.checked = true;
+
+            // 显示切换通知
+            showNotification(algoKey);
+        }
+
+        // 显示临时通知
+        function showNotification(algoKey) {
+            const existing = document.querySelector('.algo-notification');
+            if (existing) existing.remove();
+
+            const notif = document.createElement('div');
+            notif.className = 'algo-notification';
+            notif.innerHTML = `<i class="fas ${algoMap[algoKey].icon}" style="color:var(--quantum-accent);"></i>
+                               <span>已切换到 <strong>${algoMap[algoKey].name}</strong></span>`;
+            document.body.appendChild(notif);
+            setTimeout(() => {
+                if (notif) notif.remove();
+            }, 2000);
+        }
+
+        // 清理旧文件的函数
+        async function cleanupOldFiles() {
+            try {
+                const response = await fetch('/cleanup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                console.log('清理结果:', data);
+                return data.success;
+            } catch (error) {
+                console.error('清理失败:', error);
+                return false;
+            }
+        }
+
+        // 重置状态函数
+        async function resetUI(cleanup = true) {
+            // 停止轮询
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+
+            // 重置处理状态
+            isProcessing = false;
+
+            // 隐藏所有容器
+            progressContainer.style.display = 'none';
+            resultContainer.style.display = 'none';
+            errorContainer.style.display = 'none';
+
+            // 重置进度条
+            progressBar.style.width = '0%';
+            progressMessage.textContent = '';
+            progressStep.textContent = '';
+
+            // 清空GIF容器
+            gifContainer.innerHTML = '';
+
+            // 重新启用按钮
+            analyzeBtn.disabled = fileInput.files.length === 0;
+
+            // 如果需要清理，调用后端清理接口
+            if (cleanup) {
+                await cleanupOldFiles();
+            }
+
+            // 调用后端重置
+            try {
+                await fetch('/reset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('重置失败:', error);
+            }
+        }
+
+        // 显示错误
+        function showError(msg) {
+            progressContainer.style.display = 'none';
+            errorMessage.textContent = msg;
+            errorContainer.style.display = 'block';
+            isProcessing = false;
+            analyzeBtn.disabled = fileInput.files.length === 0;
+        }
+
+        // 绑定点击事件到二级菜单项
+        document.querySelectorAll('.submenu-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const algo = this.dataset.algo;
+                setActiveAlgorithm(algo);
+            });
+        });
+
+        // 绑定radio按钮变化
+        document.querySelectorAll('input[name="algorithmRadio"]').forEach(radio => {
+            radio.addEventListener('change', function(e) {
+                if (this.checked) {
+                    setActiveAlgorithm(this.value);
+                }
+            });
+        });
+
+        // 初始化
+        setActiveAlgorithm(currentAlgo);
+
+        // 移动端菜单切换
+        const toggleBtn = document.getElementById('mobileMenuToggle');
+        const sidebar = document.querySelector('.sidebar-nav');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        // 点击外部关闭移动端菜单
+        document.addEventListener('click', function(event) {
+            const isMobile = window.innerWidth <= 768;
+            if (!isMobile) return;
+            if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        // 响应式
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        // 监听文件选择
+        fileInput.addEventListener('change', function() {
+            currentFiles = Array.from(this.files);
+            analyzeBtn.disabled = this.files.length === 0 || isProcessing;
+        });
+
+        // 重置按钮点击事件
+        resetBtn.addEventListener('click', async function() {
+            await resetUI(true);
+        });
+
+        // 重试按钮点击事件
+        if (retryBtn) {
+            retryBtn.addEventListener('click', function() {
+                errorContainer.style.display = 'none';
+                analyzeBtn.click();
+            });
+        }
+
+        // 清理并重试按钮点击事件
+        if (clearAndRetryBtn) {
+            clearAndRetryBtn.addEventListener('click', async function() {
+                errorContainer.style.display = 'none';
+                await resetUI(true);
+                setTimeout(() => {
+                    analyzeBtn.click();
+                }, 500);
+            });
+        }
+
+        // 检查模块状态
+        fetch('/check_module')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.standard_available) {
+                    console.warn('标准算法模块不可用');
+                }
+                if (!data.adaptive_available) {
+                    console.warn('自适应算法模块不可用');
+                    const adaptiveRadio = document.getElementById('adaptiveAlgo');
+                    adaptiveRadio.disabled = true;
+                    if (currentAlgo === 'adaptive') {
+                        setActiveAlgorithm('standard');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('检查模块状态失败:', error);
+            });
+
+        // 分析按钮点击事件
+        analyzeBtn.addEventListener('click', async function() {
+            if (isProcessing) {
+                alert('系统正在处理中，请稍候...');
+                return;
+            }
+
+            const files = fileInput.files;
+            if (files.length === 0) {
+                alert('请先选择QASM文件');
+                return;
+            }
+
+            // 获取选中的算法
+            const algorithm = document.querySelector('input[name="algorithmRadio"]:checked').value;
+
+            // 先清理旧文件
+            progressMessage.textContent = '正在清理旧文件...';
+            await cleanupOldFiles();
+
+            // 隐藏之前的错误和结果，显示进度条
+            errorContainer.style.display = 'none';
+            resultContainer.style.display = 'none';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressBar.classList.add('progress-bar-animated');
+            progressMessage.textContent = '准备上传文件...';
+            progressStep.textContent = '';
+
+            // 设置处理状态
+            isProcessing = true;
+
+            // 禁用按钮
+            analyzeBtn.disabled = true;
+
+            // 创建FormData
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('qasm_files', files[i]);
+            }
+
+            // 根据算法选择不同的URL
+            let url = '/upload';
+            if (algorithm === 'compare') {
+                url = '/compare';
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    progressMessage.textContent = data.message;
+                    pollStatus();
+                } else {
+                    showError(data.error || '上传失败');
+                    isProcessing = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('网络错误，请检查连接后重试');
+                isProcessing = false;
+            }
+        });
+
+        // 轮询处理状态
+        function pollStatus() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+
+            pollingInterval = setInterval(() => {
+                fetch('/status')
+                .then(response => response.json())
+                .then(status => {
+                    if (status.is_processing) {
+                        progressBar.style.width = status.progress + '%';
+                        progressMessage.textContent = status.message || `处理中... ${status.progress}%`;
+                        progressStep.textContent = status.current_step || '';
+
+                        if (status.progress >= 100) {
+                            progressBar.classList.remove('progress-bar-animated');
+                        }
+                    } else {
+                        clearInterval(pollingInterval);
+                        pollingInterval = null;
+
+                        if (status.error) {
+                            showError(status.error);
+                        } else if (status.result) {
+                            showResults(status.result);
+                        } else {
+                            showError('未知错误');
+                        }
+
+                        isProcessing = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error polling status:', error);
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                    showError('获取状态失败，请检查网络连接');
+                    isProcessing = false;
+                });
+            }, 1000);
+        }
+
+        // 显示处理结果
+        function showResults(result) {
+            progressContainer.style.display = 'none';
+
+            if (result.algorithm === 'compare') {
+                showComparisonResults(result);
+            } else {
+                showSingleAlgorithmResults(result);
+            }
+
+            analyzeBtn.disabled = false;
+        }
+
+        // 显示单算法结果
+        function showSingleAlgorithmResults(result) {
+            resultMessage.textContent = `成功处理 ${result.circuits_processed} 个线路文件 (使用${result.algorithm === 'adaptive' ? '自适应算法' : '标准算法'})`;
+
+            const avgPst = result.pst_values.reduce((a, b) => a + b, 0) / result.pst_values.length;
+            const avgDepth = result.mapped_depths.reduce((a, b) => a + b, 0) / result.mapped_depths.length;
+
+            resultStats.innerHTML = `
+                <div class="col-md-3 col-6">
+                    <div class="stats-card standard">
+                        <h6>线路数量</h6>
+                        <h3>${result.circuits_processed}</h3>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stats-card adaptive">
+                        <h6>平均PST值</h6>
+                        <h3>${avgPst.toFixed(4)}</h3>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stats-card improvement">
+                        <h6>平均深度</h6>
+                        <h3>${Math.round(avgDepth)}</h3>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stats-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                        <h6>成功分配</h6>
+                        <h3>${result.allocations_count}</h3>
+                    </div>
+                </div>
+            `;
+
+            gifContainer.innerHTML = '';
+
+            if (result.gif_files && result.gif_files.length > 0) {
+                result.gif_files.forEach((gifFile) => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6 col-lg-4 mb-3';
+
+                    let title = '分区动画';
+                    if (gifFile.includes('mapping')) title = '映射动画';
+                    if (gifFile.includes('results')) title = '结果图表';
+
+                    const timestamp = new Date().getTime();
+
+                    col.innerHTML = `
+                        <div class="result-card">
+                            <img src="/get_file/${gifFile}?t=${timestamp}" class="img-fluid" alt="${gifFile}"
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\' viewBox=\'0 0 300 200\'%3E%3Crect width=\'300\' height=\'200\' fill=\'%23f8f9fa\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'14\' fill=\'%236c757d\'%3E加载失败%3C/text%3E%3C/svg%3E';">
+                            <div class="p-2">
+                                <p class="mb-1 fw-bold">${title}</p>
+                                <small class="text-muted">${gifFile}</small>
+                                <a href="/get_file/${gifFile}?t=${timestamp}" download="${gifFile}" class="btn btn-sm btn-outline-primary mt-2 w-100">
+                                    <i class="fas fa-download me-1"></i>下载
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    gifContainer.appendChild(col);
+                });
+            } else {
+                gifContainer.innerHTML = '<div class="col-12"><p class="text-muted text-center">没有生成可视化文件</p></div>';
+            }
+
+            resultContainer.style.display = 'block';
+        }
+
+        // 显示对比结果
+        function showComparisonResults(result) {
+            resultMessage.textContent = `算法对比完成 - 处理 ${result.standard.circuits_processed} 个线路文件`;
+
+            const improvement = result.comparison.improvement;
+            const improvementClass = improvement >= 0 ? 'text-success' : 'text-danger';
+
+            resultStats.innerHTML = `
+                <div class="col-md-4 col-12 mb-3">
+                    <div class="stats-card standard">
+                        <h6>标准算法</h6>
+                        <h3>${result.standard.avg_pst.toFixed(4)}</h3>
+                        <small>平均PST</small>
+                        <small class="d-block">处理 ${result.standard.circuits_processed} 个线路</small>
+                    </div>
+                </div>
+                <div class="col-md-4 col-12 mb-3">
+                    <div class="stats-card adaptive">
+                        <h6>自适应算法</h6>
+                        <h3>${result.adaptive.avg_pst.toFixed(4)}</h3>
+                        <small>平均PST</small>
+                        <small class="d-block">处理 ${result.adaptive.circuits_processed} 个线路</small>
+                    </div>
+                </div>
+                <div class="col-md-4 col-12 mb-3">
+                    <div class="stats-card improvement">
+                        <h6>性能提升</h6>
+                        <h3 class="${improvementClass}">
+                            <i class="fas ${improvement >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'} me-1"></i>
+                            ${improvement.toFixed(2)}%
+                        </h3>
+                        <small>自适应 vs 标准</small>
+                    </div>
+                </div>
+            `;
+
+            // 创建对比表格
+            const timestamp = new Date().getTime();
+
+            gifContainer.innerHTML = `
+                <div class="col-12 mb-4">
+                    <div class="result-card">
+                        <img src="/get_file/${result.comparison.chart_file}?t=${timestamp}" class="img-fluid" alt="对比图表"
+                             style="max-height: 500px; width: auto; margin: 0 auto; display: block;">
+                        <div class="p-2 text-center">
+                            <p class="mb-1 fw-bold">算法对比结果图表</p>
+                            <a href="/get_file/${result.comparison.chart_file}?t=${timestamp}" download="compare_results.png"
+                               class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="fas fa-download me-1"></i>下载对比图表
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fas fa-table me-2"></i>详细对比数据</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-bordered comparison-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>线路文件</th>
+                                            <th class="text-center">标准算法 PST</th>
+                                            <th class="text-center">自适应算法 PST</th>
+                                            <th class="text-center">差异</th>
+                                            <th class="text-center">标准深度</th>
+                                            <th class="text-center">自适应深度</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${result.comparison.pst_data.map(item => {
+                                            const diff = item.adaptive_pst && item.standard_pst ?
+                                                ((item.adaptive_pst - item.standard_pst) / item.standard_pst * 100).toFixed(2) : 'N/A';
+                                            const diffClass = diff !== 'N/A' ? (parseFloat(diff) > 0 ? 'positive-diff' : 'negative-diff') : '';
+                                            return `
+                                                <tr>
+                                                    <td><small>${item.circuit}</small></td>
+                                                    <td class="text-center">${item.standard_pst ? item.standard_pst.toFixed(4) : '-'}</td>
+                                                    <td class="text-center">${item.adaptive_pst ? item.adaptive_pst.toFixed(4) : '-'}</td>
+                                                    <td class="text-center ${diffClass}">
+                                                        ${diff !== 'N/A' ? (parseFloat(diff) > 0 ? '+' : '') + diff + '%' : '-'}
+                                                    </td>
+                                                    <td class="text-center">${item.standard_depth || '-'}</td>
+                                                    <td class="text-center">${item.adaptive_depth || '-'}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            resultContainer.style.display = 'block';
+        }
+
+        // 页面卸载前清理
+        window.addEventListener('beforeunload', function() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        });
+
+        // ========== 新增算法说明按钮逻辑 ==========
+        function showAlgoModal() {
+            // 根据当前选中的算法更新模态框内容
+            const algo = document.querySelector('input[name="algorithmRadio"]:checked').value;
+            let title = algoMap[algo].name;
+            let detail = '';
+            if (algo === 'standard') {
+                detail = '<p><strong>标准分区算法</strong>：基于线路依赖图和设备拓扑结构，采用最小生成树进行粗粒度分区，贪心分配资源，快速降低SWAP开销，适合中小规模线路。</p><p>特点：处理速度快，资源占用低，适用于量子比特数<50的线路。</p>';
+            } else if (algo === 'adaptive') {
+                detail = '<p><strong>自适应分区算法</strong>：引入动态评估机制，根据线路特征实时调整分区边界，结合模拟退火全局搜索，有效提升PST保真度，尤其适合深线路。</p><p>特点：保真度高，能处理大规模复杂线路，但耗时略长。</p>';
+            } else {
+                detail = '<p><strong>算法对比模式</strong>：同时执行标准与自适应算法，生成并排对比图表和PST差异表，帮助研究人员直观评估算法优劣。</p><p>输出：PST对比柱状图、差异百分比表格、深度对比等。</p>';
+            }
+            modalBodyContent.innerHTML = `<h6 class="mb-3">${title}</h6>${detail}`;
+            algoDescModal.classList.add('show');
+        }
+
+        function hideAlgoModal() {
+            algoDescModal.classList.remove('show');
+        }
+
+        algoInfoBtn.addEventListener('click', showAlgoModal);
+        closeModalBtn.addEventListener('click', hideAlgoModal);
+        closeModalFooterBtn.addEventListener('click', hideAlgoModal);
+        // 点击模态框外部关闭（简单处理）
+        window.addEventListener('click', function(e) {
+            if (e.target === algoDescModal) {
+                hideAlgoModal();
+            }
+        });
+
+    })();
+</script>
+
+<style>
+    /* 保证二级菜单可见 */
+    .sidebar-nav {
+        overflow: visible !important;
+    }
+    .sidebar-menu {
+        overflow: visible;
+    }
+    .sidebar-item-has-children {
+        overflow: visible;
+    }
+
+    .sidebar-link {
+        justify-content: flex-start;
+    }
+    .sidebar-link i:first-child {
+        width: 24px;
+    }
+
+    @media (max-width: 768px) {
+        .hover-submenu {
+            position: relative;
+            left: 0;
+            width: 100%;
+            background: transparent;
+            box-shadow: none;
+            border: none;
+            padding-left: 20px;
+            visibility: visible;
+            opacity: 1;
+            display: none;
+        }
+        .sidebar-item-has-children:hover .hover-submenu {
+            display: block;
+        }
+    }
+
+    .sidebar-footer .quantum-btn {
+        background: linear-gradient(135deg, #6c5ce7, #00a8ff);
+        border: none;
+        color: white;
+    }
+
+    .algo-notification {
+        border-left: 4px solid var(--quantum-accent);
+        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .result-card {
+        background: white;
+        border: 1px solid rgba(0,168,255,0.2);
+        transition: all 0.3s;
+    }
+
+    .result-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,168,255,0.2);
+    }
+
+    .result-card img {
+        border-bottom: 1px solid rgba(0,168,255,0.1);
+        background: #f8f9fa;
+        min-height: 200px;
+        object-fit: contain;
+    }
+
+    #progressContainer {
+        background: rgba(255,255,255,0.9);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(0,168,255,0.1);
+    }
+
+    .algorithm-selector {
+        background: linear-gradient(135deg, rgba(0,168,255,0.05) 0%, rgba(108,92,231,0.05) 100%);
+        border: 1px solid rgba(0,168,255,0.2);
+    }
+
+    .form-check-label small {
+        font-size: 0.8rem;
+        color: var(--quantum-text-light);
+    }
+
+    #qasmFileInput {
+        border: 2px dashed rgba(0,168,255,0.3);
+        background: rgba(255,255,255,0.8);
+        padding: 10px;
+        transition: all 0.3s;
+    }
+
+    #qasmFileInput:hover {
+        border-color: var(--quantum-accent);
+        background: white;
+    }
+
+    .reset-btn {
+        position: fixed;
+        bottom: 20px;
+        left: 270px;
+        background: white;
+        border: 1px solid #ff6b6b;
+        border-radius: 40px;
+        padding: 8px 16px;
+        color: #ff6b6b;
+        cursor: pointer;
+        z-index: 1100;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .reset-btn:hover {
+        background: #ff6b6b;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(255,107,107,0.3);
+    }
+
+    @media (max-width: 768px) {
+        .reset-btn {
+            left: 20px;
+            bottom: 80px;
+        }
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0,168,255,0.3);
+        border-radius: 50%;
+        border-top-color: var(--quantum-accent);
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .stats-card {
+        border-radius: 10px;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+
+    .stats-card.standard {
+        background: linear-gradient(135deg, #3a5afd, #2c3e9c);
+    }
+
+    .stats-card.adaptive {
+        background: linear-gradient(135deg, #00a8ff, #0077b3);
+    }
+
+    .stats-card.improvement {
+        background: linear-gradient(135deg, #00b894, #008b6b);
+    }
+
+    .stats-card h3 {
+        margin: 10px 0;
+        font-size: 2rem;
+    }
+
+    .positive-diff {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .negative-diff {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .comparison-table th {
+        background-color: #f8f9fa;
+    }
+</style>
+
+</body>
+</html>

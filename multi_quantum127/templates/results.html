@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实验结果 - 多量子线路映射仿真平台</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --quantum-primary: #3a5afd;
+      --quantum-secondary: #6c5ce7;
+      --quantum-accent: #00a8ff;
+      --quantum-light: #ffffff;
+      --quantum-dark: #2d3436;
+      --quantum-highlight: #e84118;
+      --quantum-bg: #f5f6fa;
+      --quantum-card-bg: rgba(255, 255, 255, 0.9);
+      --quantum-text: #2d3436;
+      --quantum-text-light: #636e72;
+      --quantum-border: rgba(0, 0, 0, 0.08);
+      --quantum-shadow: rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--quantum-bg);
+      color: var(--quantum-text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* 左侧导航栏样式 */
+    .sidebar-nav {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: 250px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(0, 168, 255, 0.2);
+      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+      padding: 20px 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-brand {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid rgba(0, 168, 255, 0.1);
+      margin-bottom: 20px;
+      font-weight: 700;
+      color: var(--quantum-accent);
+      font-size: 1.1rem;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: var(--quantum-text);
+      text-decoration: none;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar-link:hover, .sidebar-link.active {
+      background: rgba(0, 168, 255, 0.05);
+      color: var(--quantum-accent);
+      border-left-color: var(--quantum-accent);
+    }
+
+    .sidebar-link i {
+      width: 20px;
+      margin-right: 10px;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      min-height: 100vh;
+    }
+
+    /* 移动端菜单切换按钮 */
+    .mobile-menu-toggle {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1001;
+      background: var(--quantum-accent);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .sidebar-nav {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar-nav.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .quantum-navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 168, 255, 0.2);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      color: var(--quantum-accent) !important;
+    }
+
+    .nav-link {
+      color: var(--quantum-text) !important;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .nav-link:hover {
+      color: var(--quantum-accent) !important;
+      transform: translateY(-2px);
+    }
+
+    .quantum-card {
+      background: var(--quantum-card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 168, 255, 0.15);
+      border-radius: 15px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      color: var(--quantum-text);
+    }
+
+    .quantum-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 18px 40px rgba(108, 92, 231, 0.15);
+      border-color: var(--quantum-accent);
+    }
+
+    .section-title {
+      position: relative;
+      padding-bottom: 15px;
+      margin-bottom: 40px;
+      color: var(--quantum-primary);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .section-title:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--quantum-accent), transparent);
+      border-radius: 2px;
+    }
+
+    .quantum-btn {
+      background: linear-gradient(135deg, var(--quantum-secondary), var(--quantum-accent));
+      border: none;
+      border-radius: 30px;
+      padding: 12px 28px;
+      font-weight: 600;
+      transition: all 0.3s;
+      color: white;
+      letter-spacing: 0.5px;
+    }
+
+    .quantum-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px rgba(108, 92, 231, 0.2);
+      color: white;
+    }
+
+    footer {
+      background: rgba(255, 255, 255, 0.95);
+      border-top: 1px solid rgba(0, 168, 255, 0.2);
+      padding: 40px 0;
+      color: var(--quantum-text);
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card.primary {
+      background: linear-gradient(135deg, var(--quantum-primary), var(--quantum-secondary));
+      color: white;
+    }
+
+    .stat-card.success {
+      background: linear-gradient(135deg, #00b894, #00a8ff);
+      color: white;
+    }
+
+    .stat-card.warning {
+      background: linear-gradient(135deg, #fdcb6e, #e84118);
+      color: white;
+    }
+
+    .stat-card.info {
+      background: linear-gradient(135deg, #74b9ff, #0984e3);
+      color: white;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .comparison-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin: 5px;
+    }
+
+    .comparison-badge.better {
+      background: rgba(0, 184, 148, 0.2);
+      color: #00b894;
+      border: 1px solid rgba(0, 184, 148, 0.3);
+    }
+
+    .comparison-badge.worse {
+      background: rgba(232, 65, 24, 0.2);
+      color: #e84118;
+      border: 1px solid rgba(232, 65, 24, 0.3);
+    }
+  
+/* ===== Global UI polish (shared) ===== */
+body { overflow-x: hidden; }
+.main-content { padding-bottom: 40px; }
+.content-header {
+  margin: 20px 24px 18px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 168, 255, 0.12);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+@media (max-width: 768px) {
+  .content-header { margin: 78px 14px 16px; flex-direction: column; align-items: flex-start; }
+}
+.content-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--quantum-primary);
+  line-height: 1.2;
+}
+.content-subtitle {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: var(--quantum-text-light);
+}
+.content-actions .btn { border-radius: 999px; padding: 8px 14px; font-weight: 600; }
+.btn-outline-primary { border-color: var(--quantum-accent); color: var(--quantum-accent); }
+.btn-outline-primary:hover { background: rgba(0, 168, 255, 0.08); color: var(--quantum-accent); }
+.sidebar-footer {
+  padding: 14px 16px 18px;
+  border-top: 1px solid rgba(0, 168, 255, 0.10);
+  margin-top: 18px;
+}
+.sidebar-user {
+  font-size: 0.85rem;
+  color: var(--quantum-text-light);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar-user i { color: var(--quantum-accent); }
+.sidebar-footer .quantum-btn { width: 100%; padding: 10px 14px; }
+</style>
+</head>
+<body>
+<!-- 左侧导航栏 -->
+<div class="sidebar-nav">
+    <div class="sidebar-brand">
+        <i class="fas fa-atom me-2"></i>
+        <span>QuBridge 导航</span>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="{{ url_for('home') }}" class="sidebar-link"><i class="fas fa-home"></i>首页</a></li>
+        <li><a href="{{ url_for('framework') }}" class="sidebar-link"><i class="fas fa-sitemap"></i>QuBridge框架</a></li>
+        <li><a href="{{ url_for('demos') }}" class="sidebar-link"><i class="fas fa-play-circle"></i>算法演示</a></li>
+        <li><a href="{{ url_for('results') }}" class="sidebar-link"><i class="fas fa-chart-bar"></i>实验结果</a></li>
+        <li><a href="{{ url_for('simulator') }}" class="sidebar-link"><i class="fas fa-microchip"></i>量子模拟器</a></li>
+        <li><a href="{{ url_for('qubit_routing') }}" class="sidebar-link"><i class="fas fa-route"></i>量子比特路由</a></li>
+        <li><a href="{{ url_for('circuit_partition') }}" class="sidebar-link"><i class="fas fa-project-diagram"></i>线路分区映射</a></li>
+        <li><a href="{{ url_for('News') }}" class="sidebar-link"><i class="fas fa-newspaper"></i>最新动态</a></li>
+        <li><a href="{{ url_for('about') }}" class="sidebar-link"><i class="fas fa-info-circle"></i>关于项目</a></li>
+    </ul>
+
+<div class="sidebar-footer">
+  <div class="sidebar-user">
+    <i class="fas fa-user-circle"></i>
+    <span>{{ current_user.username if current_user.is_authenticated else "未登录" }}</span>
+  </div>
+  <a class="btn quantum-btn" href="{{ url_for('logout') }}">
+    <i class="fas fa-sign-out-alt me-2"></i>退出登录
+  </a>
+</div>
+
+</div>
+
+<!-- 移动端菜单切换按钮 -->
+<button class="btn quantum-btn mobile-menu-toggle quantum-btn" id="mobileMenuToggle">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- 主内容区域 -->
+<div class="main-content">
+  
+<div class="content-header">
+  <div>
+    <div class="content-title">实验结果</div>
+    <div class="content-subtitle">映射深度、PST 与性能对比</div>
+  </div>
+  <div class="content-actions d-flex gap-2">
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('home') }}"><i class="fas fa-home me-1"></i>首页</a>
+    <a class="btn quantum-btn btn-sm" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-1"></i>退出</a>
+  </div>
+</div>
+<!-- 导航栏 -->
+<!-- 实验结果 -->
+  <section class="py-5">
+    <div class="container">
+      <h2 class="section-title">实验结果</h2>
+
+      <!-- 关键指标 -->
+      <div class="row mb-5">
+        <div class="col-md-3">
+          <div class="stat-card primary">
+            <div class="stat-number">18.7%</div>
+            <div class="stat-label">平均保真度提升</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card success">
+            <div class="stat-number">35%</div>
+            <div class="stat-label">资源利用率提高</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card warning">
+            <div class="stat-number">42%</div>
+            <div class="stat-label">执行时间减少</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card info">
+            <div class="stat-number">92.3%</div>
+            <div class="stat-label">分区算法效率</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-5">
+        <div class="col-lg-8">
+          <div class="quantum-card p-4">
+            <h4 class="mb-4">独立执行 vs 并行执行的保真度比较</h4>
+            <canvas id="fidelity-chart" height="300"></canvas>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="quantum-card p-4 h-100">
+            <h4 class="mb-4">实验参数</h4>
+            <div class="mb-3">
+              <label class="form-label fw-bold">量子处理器:</label>
+              <p>IBMQ 27-qubit Falcon</p>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">线路数量:</label>
+              <p>2-4个并行</p>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">深度范围:</label>
+              <p>15-50门</p>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">平均保真度提升:</label>
+              <div class="d-flex align-items-center">
+                <i class="fas fa-arrow-up text-success me-2"></i>
+                <span class="fs-4 fw-bold" style="color: var(--quantum-highlight);">18.7%</span>
+              </div>
+            </div>
+            <div class="mt-4">
+              <h5>关键发现</h5>
+              <ul class="mt-2">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>并行执行效率提升显著</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>资源利用率提高35%</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>错误率控制在可接受范围</li>
+                <li><i class="fas fa-check text-success me-2"></i>系统稳定性良好</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-5">
+        <div class="col-lg-6 mb-4">
+          <div class="quantum-card p-4">
+            <h4 class="mb-4">不同数量线路的执行结果</h4>
+            <canvas id="circuit-count-chart" height="250"></canvas>
+          </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+          <div class="quantum-card p-4">
+            <h4 class="mb-4">氘核基态能量估计结果</h4>
+            <canvas id="energy-chart" height="250"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 性能比较表格 -->
+      <div class="row">
+        <div class="col-12">
+          <div class="quantum-card p-4">
+            <h4 class="mb-4">QuBridge与传统方法性能比较</h4>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                <tr>
+                  <th>性能指标</th>
+                  <th>传统方法</th>
+                  <th>QuBridge框架</th>
+                  <th>改进幅度</th>
+                  <th>评估</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                  <td>线路保真度</td>
+                  <td>0.782</td>
+                  <td>0.929</td>
+                  <td>+18.7%</td>
+                  <td><span class="comparison-badge better">显著提升</span></td>
+                </tr>
+                <tr>
+                  <td>资源利用率</td>
+                  <td>58.3%</td>
+                  <td>78.9%</td>
+                  <td>+35.3%</td>
+                  <td><span class="comparison-badge better">优秀</span></td>
+                </tr>
+                <tr>
+                  <td>执行时间</td>
+                  <td>2.8s</td>
+                  <td>1.6s</td>
+                  <td>-42.9%</td>
+                  <td><span class="comparison-badge better">大幅减少</span></td>
+                </tr>
+                <tr>
+                  <td>并发程序数</td>
+                  <td>1</td>
+                  <td>2-4</td>
+                  <td>+300%</td>
+                  <td><span class="comparison-badge better">突破性</span></td>
+                </tr>
+                <tr>
+                  <td>错误率</td>
+                  <td>0.045</td>
+                  <td>0.038</td>
+                  <td>-15.6%</td>
+                  <td><span class="comparison-badge better">改善</span></td>
+                </tr>
+                <tr>
+                  <td>内存占用</td>
+                  <td>2.1GB</td>
+                  <td>2.4GB</td>
+                  <td>+14.3%</td>
+                  <td><span class="comparison-badge worse">轻微增加</span></td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 实验环境详情 -->
+      <div class="row mt-5">
+        <div class="col-12">
+          <div class="quantum-card p-4">
+            <h4 class="mb-4">实验环境与配置</h4>
+            <div class="row">
+              <div class="col-md-6">
+                <h5>硬件配置</h5>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><i class="fas fa-server me-2 text-primary"></i><strong>量子处理器:</strong> IBMQ Falcon r5.11 (27-qubit)</li>
+                  <li class="mb-2"><i class="fas fa-microchip me-2 text-primary"></i><strong>经典计算节点:</strong> 2x Intel Xeon Gold 6248R</li>
+                  <li class="mb-2"><i class="fas fa-memory me-2 text-primary"></i><strong>内存:</strong> 384GB DDR4</li>
+                  <li><i class="fas fa-hdd me-2 text-primary"></i><strong>存储:</strong> 4TB NVMe SSD</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h5>软件环境</h5>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><i class="fab fa-python me-2 text-success"></i><strong>Python:</strong> 3.9.7</li>
+                  <li class="mb-2"><i class="fas fa-cube me-2 text-success"></i><strong>Qiskit:</strong> 0.34.2</li>
+                  <li class="mb-2"><i class="fas fa-project-diagram me-2 text-success"></i><strong>Cirq:</strong> 0.13.1</li>
+                  <li><i class="fas fa-code me-2 text-success"></i><strong>QuBridge框架:</strong> 1.0.0</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <h4><i class="fas fa-atom me-2" style="color: var(--quantum-accent);"></i>量子计算多编程机制</h4>
+          <p class="mt-3">探索NISQ时代量子计算的新范式，提高量子硬件利用效率。</p>
+          <div class="d-flex gap-3 mt-4">
+            <a href="#" style="color: var(--quantum-text);"><i class="fab fa-github fa-2x"></i></a>
+            <a href="#" style="color: var(--quantum-text);"><i class="fab fa-twitter fa-2x"></i></a>
+            <a href="#" style="color: var(--quantum-text);"><i class="fab fa-linkedin fa-2x"></i></a>
+            <a href="#" style="color: var(--quantum-text);"><i class="fab fa-youtube fa-2x"></i></a>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <h5>快速链接</h5>
+          <ul class="list-unstyled mt-3">
+            <li class="mb-2"><a href="{{ url_for('home') }}" style="color: var(--quantum-text);">首页</a></li>
+                        <li class="mb-2"><a href="{{ url_for('framework') }}" style="color: var(--quantum-text);">QuBridge框架</a></li>
+                        <li class="mb-2"><a href="{{ url_for('demos') }}" style="color: var(--quantum-text);">算法演示</a></li>
+                        <li class="mb-2"><a href="{{ url_for('results') }}" style="color: var(--quantum-text);">实验结果</a></li>
+                        <li><a href="{{ url_for('about') }}" style="color: var(--quantum-text);">关于</a></li>
+          </ul>
+        </div>
+        <div class="col-md-3 mb-4">
+          <h5>联系方式</h5>
+          <ul class="list-unstyled mt-3">
+            <li class="mb-2"><i class="fas fa-envelope me-2" style="color: var(--quantum-accent);"></i> contact@quantum-research.org</li>
+            <li class="mb-2"><i class="fas fa-map-marker-alt me-2" style="color: var(--quantum-accent);"></i> 量子计算研究所</li>
+            <li class="mb-2"><i class="fas fa-phone me-2" style="color: var(--quantum-accent);"></i> +86 123 4567 8910</li>
+            <li><i class="fas fa-globe me-2" style="color: var(--quantum-accent);"></i> www.quantum-research.org</li>
+          </ul>
+        </div>
+      </div>
+      <hr class="my-4" style="border-color: rgba(0, 168, 255, 0.1);">
+      <div class="text-center">
+        <p>&copy; 2023 量子计算研究团队. 保留所有权利。</p>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // 移动端菜单控制
+  document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const sidebarNav = document.querySelector('.sidebar-nav');
+
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener('click', function() {
+        sidebarNav.classList.toggle('open');
+      });
+    }
+
+    // 响应式显示/隐藏移动菜单按钮
+    function checkScreenSize() {
+      if (window.innerWidth <= 768) {
+        mobileMenuToggle.style.display = 'flex';
+      } else {
+        mobileMenuToggle.style.display = 'none';
+        sidebarNav.classList.remove('open');
+      }
+    }
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    // 初始化图表
+    initCharts();
+
+    // 模拟器按钮 - 跳转到独立页面
+    document.getElementById('simulatorBtn').addEventListener('click', function() {
+      window.location.href = "simulator.html";
+    });
+  });
+
+  // 初始化图表
+  function initCharts() {
+    // 保真度比较图表
+    const fidelityCtx = document.getElementById('fidelity-chart').getContext('2d');
+    new Chart(fidelityCtx, {
+      type: 'bar',
+      data: {
+        labels: ['线路A', '线路B', '线路C', '线路D', '线路E', '线路F'],
+        datasets: [
+          {
+            label: '独立执行',
+            data: [0.85, 0.78, 0.82, 0.79, 0.81, 0.76],
+            backgroundColor: 'rgba(108, 92, 231, 0.7)',
+            borderColor: 'rgba(108, 92, 231, 1)',
+            borderWidth: 1
+          },
+          {
+            label: '并行执行',
+            data: [0.92, 0.89, 0.91, 0.87, 0.90, 0.85],
+            backgroundColor: 'rgba(0, 168, 255, 0.7)',
+            borderColor: 'rgba(0, 168, 255, 1)',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              color: '#2d3436',
+              font: {
+                size: 14
+              }
+            }
+          },
+          title: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: ${(context.raw * 100).toFixed(1)}%`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 1.0,
+            ticks: {
+              color: '#636e72',
+              callback: function(value) {
+                return (value * 100) + '%';
+              }
+            },
+            grid: {
+              color: 'rgba(45, 52, 54, 0.1)'
+            }
+          },
+          x: {
+            ticks: {
+              color: '#636e72'
+            },
+            grid: {
+              color: 'rgba(45, 52, 54, 0.1)'
+            }
+          }
+        }
+      }
+    });
+
+    // 线路数量图表
+    const countCtx = document.getElementById('circuit-count-chart').getContext('2d');
+    new Chart(countCtx, {
+      type: 'line',
+      data: {
+        labels: ['1线路', '2线路', '3线路', '4线路', '5线路'],
+        datasets: [{
+          label: '执行时间(ms)',
+          data: [120, 180, 220, 280, 350],
+          backgroundColor: 'rgba(108, 92, 231, 0.1)',
+          borderColor: 'rgba(108, 92, 231, 1)',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: 'rgba(108, 92, 231, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#2d3436',
+              font: {
+                size: 14
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#636e72'
+            },
+            grid: {
+              color: 'rgba(45, 52, 54, 0.1)'
+            },
+            title: {
+              display: true,
+              text: '执行时间 (ms)',
+              color: '#636e72'
+            }
+          },
+          x: {
+            ticks: {
+              color: '#636e72'
+            },
+            grid: {
+              color: 'rgba(45, 52, 54, 0.1)'
+            },
+            title: {
+              display: true,
+              text: '并行线路数量',
+              color: '#636e72'
+            }
+          }
+        }
+      }
+    });
+
+    // 能量估计图表
+    const energyCtx = document.getElementById('energy-chart').getContext('2d');
+    new Chart(energyCtx, {
+      type: 'bar',
+      data: {
+        labels: ['独立执行', '并行执行', '理论值'],
+        datasets: [{
+          label: '能量估计(MeV)',
+          data: [-2.15, -2.22, -2.23],
+          backgroundColor: [
+            'rgba(108, 92, 231, 0.7)',
+            'rgba(0, 168, 255, 0.7)',
+            'rgba(232, 65, 24, 0.7)'
+          ],
+          borderColor: [
+            'rgba(108, 92, 231, 1)',
+            'rgba(0, 168, 255, 1)',
+            'rgba(232, 65, 24, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `能量: ${context.raw} MeV`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: -2.3,
+            max: -2.1,
+            ticks: {
+              color: '#636e72'
+            },
+            grid: {
+              color: 'rgba(45, 52, 54, 0.1)'
+            },
+            title: {
+              display: true,
+              text: '能量 (MeV)',
+              color: '#636e72'
+            }
+          },
+          x: {
+            ticks: {
+              color: '#636e72'
+            },
+            grid: {
+              color: 'rgba(45, 52, 54, 0.1)'
+            }
+          }
+        }
+      }
+    });
+  }
+</script>
+
+<script>
+(function() {
+  // sidebar active state
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  document.querySelectorAll(".sidebar-link").forEach(a => a.classList.remove("active"));
+  document.querySelectorAll(".sidebar-link").forEach(a => {
+    try {
+      const u = new URL(a.href);
+      const p = u.pathname.replace(/\/+$/, "") || "/";
+      if (p === path) a.classList.add("active");
+    } catch(e) {}
+  });
+
+  // close sidebar on mobile after click
+  const sidebar = document.querySelector(".sidebar-nav");
+  if (sidebar) {
+    document.querySelectorAll(".sidebar-link").forEach(a => {
+      a.addEventListener("click", () => {
+        if (window.innerWidth <= 768) sidebar.classList.remove("open");
+      });
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

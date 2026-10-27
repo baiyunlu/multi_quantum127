@@ -1,0 +1,260 @@
+:root {
+  --quantum-primary: #3a5afd;
+  --quantum-secondary: #6c5ce7;
+  --quantum-accent: #00a8ff;
+  --quantum-light: #ffffff;
+  --quantum-dark: #2d3436;
+  --quantum-highlight: #e84118;
+  --quantum-bg: #f5f6fa;
+  --quantum-card-bg: rgba(255, 255, 255, 0.9);
+  --quantum-text: #2d3436;
+  --quantum-text-light: #636e72;
+  --quantum-border: rgba(0, 0, 0, 0.08);
+  --quantum-shadow: rgba(0, 0, 0, 0.05);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--quantum-bg);
+  color: var(--quantum-text);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* 左侧导航栏样式 */
+.sidebar-nav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 250px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(0, 168, 255, 0.2);
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(0, 168, 255, 0.1);
+  margin-bottom: 20px;
+  font-weight: 700;
+  color: var(--quantum-accent);
+  font-size: 1.1rem;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--quantum-text);
+  text-decoration: none;
+  transition: all 0.3s;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover, .sidebar-link.active {
+  background: rgba(0, 168, 255, 0.05);
+  color: var(--quantum-accent);
+  border-left-color: var(--quantum-accent);
+}
+
+.sidebar-link i { width: 20px; margin-right: 10px; }
+
+.main-content {
+  margin-left: 250px;
+  min-height: 100vh;
+}
+
+/* 移动端菜单切换按钮 */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1001;
+  background: var(--quantum-accent);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  color: white;
+  font-size: 1.2rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .sidebar-nav {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .sidebar-nav.open { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.quantum-navbar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 168, 255, 0.2);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-brand { font-weight: 700; color: var(--quantum-accent) !important; }
+
+.nav-link {
+  color: var(--quantum-text) !important;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: var(--quantum-accent) !important;
+  transform: translateY(-2px);
+}
+
+.hero-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(58, 90, 253, 0.05), rgba(0, 168, 255, 0.05));
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section h1 {
+  font-weight: 800;
+  color: var(--quantum-primary);
+  line-height: 1.2;
+}
+
+.hero-section p.lead {
+  color: var(--quantum-accent);
+  font-weight: 500;
+}
+
+.quantum-card {
+  background: var(--quantum-card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 168, 255, 0.15);
+  border-radius: 15px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  color: var(--quantum-text);
+}
+
+.quantum-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 18px 40px rgba(108, 92, 231, 0.15);
+  border-color: var(--quantum-accent);
+}
+
+.quantum-btn {
+  background: linear-gradient(135deg, var(--quantum-secondary), var(--quantum-accent));
+  border: none;
+  border-radius: 30px;
+  padding: 12px 28px;
+  font-weight: 600;
+  transition: all 0.3s;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.quantum-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(108, 92, 231, 0.2);
+  color: white;
+}
+
+.btn-outline-primary {
+  border-width: 2px;
+  font-weight: 600;
+  padding: 10px 26px;
+  color: var(--quantum-accent);
+  border-color: var(--quantum-accent);
+}
+
+.btn-outline-primary:hover { background: rgba(0, 168, 255, 0.1); }
+
+.circuit-visualization {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  border: 1px solid rgba(0, 168, 255, 0.2);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.qbit-line { stroke: var(--quantum-accent); stroke-width: 2; }
+
+.gate-rect {
+  fill: var(--quantum-secondary);
+  stroke: #fff;
+  rx: 6;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gate-rect:hover {
+  fill: var(--quantum-highlight);
+  transform: scale(1.05);
+}
+
+footer {
+  background: rgba(255, 255, 255, 0.95);
+  border-top: 1px solid rgba(0, 168, 255, 0.2);
+  padding: 40px 0;
+  color: var(--quantum-text);
+}
+
+.pulse { animation: pulse 2s infinite; }
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 168, 255, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(0, 168, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 168, 255, 0); }
+}
+
+.badge {
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.tech-tag {
+  background: rgba(108, 92, 231, 0.1);
+  border: 1px solid rgba(108, 92, 231, 0.2);
+  color: var(--quantum-secondary);
+  border-radius: 20px;
+  padding: 5px 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.tech-icon { font-size: 2rem; margin-right: 15px; color: var(--quantum-accent); }
+
+a { color: var(--quantum-accent); text-decoration: none; transition: all 0.2s; }
+a:hover { color: var(--quantum-primary); }
+.text-muted { color: var(--quantum-text-light) !important; }
+
+@media (max-width: 992px) {
+  .header h1 { font-size: 2.2rem; }
+}
+@media (max-width: 768px) {
+  .header h1 { font-size: 1.8rem; }
+  .header p { font-size: 1rem; }
+}
